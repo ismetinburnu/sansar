@@ -9,7 +9,6 @@
   <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.0/dist/full.css" rel="stylesheet" type="text/css" />
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -21,35 +20,34 @@
     .loading-bar::after { content: ''; position: absolute; top: 0; left: 0; width: 50%; height: 100%; background: #38bdf8; border-radius: 10px; animation: loadBar 1s infinite ease-in-out; }
     .glass-nav { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
     .premium-card { background: #1e293b; border: 1px solid #334155; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); }
-    #debug-log { font-size: 10px; color: #ef4444; margin-top: 10px; word-wrap: break-word; max-width: 80%; }
+    .pulse-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
   </style>
 </head>
 <body class="overflow-x-hidden pb-24">
-
   <div id="toast-container"></div>
-
   <div id="splash-screen" class="fixed inset-0 z-[100] bg-[#0f172a] flex flex-col items-center justify-center">
     <img src="/logo.png" onerror="this.src='https://ui-avatars.com/api/?name=SANSAR&background=38bdf8&color=fff'" class="w-32 h-32 rounded-3xl shadow-[0_0_30px_rgba(56,189,248,0.3)]">
     <div class="loading-bar"></div>
   </div>
-
   <div id="error-screen" class="hidden-area flex-col items-center justify-center h-screen bg-[#0f172a] p-6 text-center">
     <i class='bx bx-shield-x text-7xl text-red-500'></i>
     <h1 class="text-3xl font-black mt-4 text-white">YETKİSİZ GİRİŞ</h1>
-    <p class="mt-2 text-gray-400 font-bold" id="error-msg">Sisteme erişim sağlanamadı.</p>
-    <div id="debug-log"></div>
+    <p class="mt-2 text-gray-400 font-bold" id="error-msg"></p>
   </div>
-
   <div id="app-screen" class="hidden-area">
-    <div class="navbar glass-nav fixed top-0 z-50">
-      <div class="flex-1">
-        <a class="btn btn-ghost normal-case text-2xl font-black text-[#38bdf8] tracking-widest"><i class='bx bxl-telegram mr-1'></i> SANSAR</a>
+    <div class="navbar glass-nav fixed top-0 z-50 px-4">
+      <div class="flex-1 flex items-center gap-2">
+        <a class="text-xl font-black text-[#38bdf8] tracking-widest"><i class='bx bxl-telegram'></i> SANSAR</a>
+        <div class="bg-[#0f172a] border border-gray-700 rounded-full px-2 py-1 flex items-center gap-1.5 ml-1">
+          <span class="pulse-dot"></span>
+          <span id="online-counter" class="text-[10px] font-bold text-white">1</span>
+        </div>
       </div>
       <div class="flex-none">
-        <div class="avatar online"><div class="w-10 rounded-full ring-2 ring-[#38bdf8]"><img id="user-avatar" src="" /></div></div>
+        <div class="avatar online"><div class="w-9 rounded-full ring-2 ring-[#38bdf8]"><img id="user-avatar" src="" /></div></div>
       </div>
     </div>
-
     <div class="mt-20 px-4 view-section" id="view-giveaways">
       <div class="tabs tabs-boxed bg-[#1e293b] mb-4 p-1" id="giveaway-tabs">
         <a class="tab tab-active text-white font-bold w-1/2" onclick="filterGiveaways('active')">Aktif</a>
@@ -57,14 +55,12 @@
       </div>
       <div id="giveaways-list" class="flex flex-col gap-4"></div>
     </div>
-
     <div class="mt-20 px-4 view-section hidden-area" id="view-profile">
       <div class="premium-card p-6 flex flex-col items-center mb-4 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-[#0ea5e9] to-[#38bdf8] opacity-20"></div>
         <img id="profile-avatar-large" src="" class="w-24 h-24 rounded-full ring-4 ring-[#38bdf8] mb-3 relative z-10 shadow-2xl" />
         <h2 id="profile-name" class="text-2xl font-black text-white relative z-10"></h2>
         <p class="text-sm text-[#38bdf8] font-bold relative z-10" id="profile-username"></p>
-        
         <div class="flex w-full mt-6 divide-x divide-gray-700 border-t border-gray-700 pt-4">
           <div class="flex-1 text-center">
             <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Katılınan</p>
@@ -81,22 +77,20 @@
         <ul id="profile-history" class="space-y-3"></ul>
       </div>
     </div>
-
     <div class="mt-20 px-4 view-section hidden-area" id="view-admin">
       <div class="premium-card p-5 mb-5 border-l-4 border-[#38bdf8]">
-        <h2 class="text-xl font-black flex items-center gap-2 mb-4 text-white"><i class='bx bxs-crown text-[#38bdf8]'></i> Yeni Çekiliş Başlat</h2>
-        <input type="text" id="admin-title" placeholder="Çekiliş Başlığı (Örn: 1000 TL Bakiye)" class="input input-bordered bg-[#0f172a] text-white w-full mb-3 font-bold" />
-        <textarea id="admin-desc" placeholder="Açıklama ve Şartlar..." class="textarea textarea-bordered bg-[#0f172a] text-white w-full mb-3 h-24"></textarea>
+        <h2 class="text-xl font-black flex items-center gap-2 mb-4 text-white"><i class='bx bxs-crown text-[#38bdf8]'></i> Yeni Çekiliş</h2>
+        <input type="text" id="admin-title" placeholder="Başlık" class="input input-bordered bg-[#0f172a] text-white w-full mb-3 font-bold" />
+        <textarea id="admin-desc" placeholder="Açıklama" class="textarea textarea-bordered bg-[#0f172a] text-white w-full mb-3 h-20"></textarea>
         <div class="flex gap-2 mb-4 items-center bg-[#0f172a] p-2 rounded-lg border border-gray-700">
-          <label class="text-sm font-bold text-gray-400 pl-2 flex-1">Kazanan Sayısı:</label>
+          <label class="text-sm font-bold text-gray-400 pl-2 flex-1">Kazanan:</label>
           <input type="number" id="admin-winners" class="input input-sm bg-transparent text-white w-20 font-black text-center" value="1" min="1" />
         </div>
-        <button class="btn bg-[#38bdf8] hover:bg-[#0ea5e9] text-white w-full font-black border-none shadow-[0_0_15px_rgba(56,189,248,0.4)]" onclick="adminAction('create')"><i class='bx bx-send text-xl'></i> Başlat ve Duyur</button>
+        <button class="btn bg-[#38bdf8] hover:bg-[#0ea5e9] text-white w-full font-black border-none" onclick="adminAction('create')"><i class='bx bx-send'></i> Başlat</button>
       </div>
-      <h3 class="text-lg font-black text-white mb-3 pl-1"><i class='bx bx-slider-alt'></i> Aktif Çekilişleri Yönet</h3>
+      <h3 class="text-lg font-black text-white mb-3 pl-1"><i class='bx bx-slider-alt'></i> Yönetim</h3>
       <div id="admin-active-list" class="flex flex-col gap-4"></div>
     </div>
-
     <div class="btm-nav bg-[#1e293b] border-t border-gray-800 z-50 h-[70px]">
       <button class="active text-[#38bdf8]" onclick="switchTab('giveaways')">
         <i class='bx bxs-gift text-2xl mb-1'></i><span class="btm-nav-label text-[10px] font-bold">Çekilişler</span>
@@ -109,15 +103,10 @@
       </button>
     </div>
   </div>
-
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    
-    // Deno Deploy bağlantısını otomatik yakala
-    const socketUrl = window.location.origin;
-    const socket = io(socketUrl, { transports: ["websocket", "polling"] });
-
+    const socket = io(window.location.origin, { transports: ["websocket", "polling"] });
     let currentUser = null;
     let userIsAdmin = false;
     let allGiveaways = [];
@@ -125,67 +114,45 @@
 
     window.onload = () => {
       if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
-        showFatalError("Telegram doğrulama verisi bulunamadı. Lütfen uygulamayı doğrudan bot üzerinden başlatın.", "TG_INIT_FAILED");
+        showFatalError("Telegram verisi bulunamadı.");
         return;
       }
-      
       currentUser = tg.initDataUnsafe.user;
       const avatarUrl = currentUser.photo_url || `https://ui-avatars.com/api/?name=${currentUser.first_name}&background=38bdf8&color=fff`;
       document.getElementById('user-avatar').src = avatarUrl;
       document.getElementById('profile-avatar-large').src = avatarUrl;
       document.getElementById('profile-name').innerText = currentUser.first_name;
       document.getElementById('profile-username').innerText = currentUser.username ? `@${currentUser.username}` : '';
-
-      // API Auth İsteği
-      fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: currentUser.id, username: currentUser.username, firstName: currentUser.first_name })
-      })
-      .then(async res => {
-        if (!res.ok) throw new Error(`HTTP Hata Kodu: ${res.status} - Sunucu erişimi reddetti.`);
-        return res.json();
-      })
-      .then(data => {
+      fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: currentUser.id, username: currentUser.username, firstName: currentUser.first_name }) })
+      .then(res => res.json()).then(data => {
         document.getElementById('splash-screen').style.display = 'none';
         if (data.success) {
           userIsAdmin = data.isAdmin;
           if(userIsAdmin) document.getElementById('nav-admin').classList.remove('hidden-area');
           document.getElementById('app-screen').classList.remove('hidden-area');
           loadData();
-        } else {
-          showFatalError(data.message, "AUTH_REJECTED");
-        }
-      })
-      .catch(err => {
-        showFatalError("Sunucuya bağlanılamadı. Deno Deploy ayarlarınızı kontrol edin.", err.message);
-      });
+        } else showFatalError(data.message);
+      }).catch(err => showFatalError("Sunucu hatası."));
     };
 
-    function showFatalError(msg, debugInfo) {
+    function showFatalError(msg) {
       document.getElementById('splash-screen').style.display = 'none';
       document.getElementById('error-msg').innerText = msg;
-      if (debugInfo) document.getElementById('debug-log').innerText = "Hata Detayı: " + debugInfo;
       document.getElementById('error-screen').style.display = 'flex';
-      tg.HapticFeedback.notificationOccurred('error');
     }
 
-    socket.on('data_updated', () => { loadData(); });
+    socket.on('data_updated', () => loadData());
+    socket.on('live_stats', (data) => document.getElementById('online-counter').innerText = data.online);
 
     function loadData() {
-      fetch(`/api/giveaways/${currentUser.id}`)
-        .then(res => res.json())
-        .then(data => {
-          allGiveaways = data;
-          if(currentTab === 'giveaways') filterGiveaways(document.querySelector('#giveaway-tabs .tab-active').innerText === 'Aktif' ? 'active' : 'ended', true);
-          if(currentTab === 'admin' && userIsAdmin) loadAdminPanel();
-        }).catch(err => console.error("Veri çekme hatası:", err));
-        
-      fetch(`/api/profile/${currentUser.id}`)
-        .then(res => res.json())
-        .then(data => {
-          if(currentTab === 'profile') renderProfile(data);
-        });
+      fetch(`/api/giveaways/${currentUser.id}`).then(res => res.json()).then(data => {
+        allGiveaways = data;
+        if(currentTab === 'giveaways') filterGiveaways(document.querySelector('#giveaway-tabs .tab-active').innerText === 'Aktif' ? 'active' : 'ended', true);
+        if(currentTab === 'admin' && userIsAdmin) loadAdminPanel();
+      });
+      fetch(`/api/profile/${currentUser.id}`).then(res => res.json()).then(data => {
+        if(currentTab === 'profile') renderProfile(data);
+      });
     }
 
     function showToast(message, type = "success") {
@@ -205,7 +172,6 @@
       event.currentTarget.classList.add('active', 'text-[#38bdf8]');
       event.currentTarget.classList.remove('text-gray-400');
       tg.HapticFeedback.impactOccurred('light');
-      
       document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden-area'));
       document.getElementById(`view-${tabId}`).classList.remove('hidden-area');
       currentTab = tabId;
@@ -218,21 +184,17 @@
         event.currentTarget.classList.add('tab-active', 'text-white');
         event.currentTarget.classList.remove('text-gray-400');
       }
-
       const container = document.getElementById('giveaways-list');
       container.innerHTML = '';
-      
       const filtered = allGiveaways.filter(g => status === 'active' ? g.status !== 'ended' : g.status === 'ended');
       if(filtered.length === 0) { container.innerHTML = `<div class="text-center text-gray-500 mt-12"><i class='bx bx-ghost text-6xl opacity-50'></i><p class="font-bold mt-2">Kayıt bulunamadı.</p></div>`; return; }
-
       filtered.forEach(g => {
         let actionHTML = "";
         if (g.status === 'ended') {
           const winners = g.winners_data ? JSON.parse(g.winners_data) : [];
           const didIWin = winners.some(w => w.id === currentUser.id);
           const wNames = winners.map(w => w.name).join(', ');
-          actionHTML = `<div class="mt-4 p-3 rounded-xl border border-gray-700 ${didIWin ? 'bg-[rgba(16,185,129,0.2)] text-[#10b981]' : 'bg-[#0f172a] text-gray-400'} text-center font-bold text-sm">
-            <i class='bx bxs-crown text-lg mb-1 block'></i> Kazananlar: ${wNames || 'Yok'}</div>`;
+          actionHTML = `<div class="mt-4 p-3 rounded-xl border border-gray-700 ${didIWin ? 'bg-[rgba(16,185,129,0.2)] text-[#10b981]' : 'bg-[#0f172a] text-gray-400'} text-center font-bold text-sm"><i class='bx bxs-crown text-lg mb-1 block'></i> Kazananlar: ${wNames || 'Yok'}</div>`;
           if(didIWin && !isReload) confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
         } else if (g.status === 'paused') {
           actionHTML = `<button class="btn btn-disabled w-full mt-4 font-black bg-gray-800 text-gray-500 border-none">Katılım Duraklatıldı</button>`;
@@ -241,23 +203,9 @@
         } else {
           const btnClass = g.is_joined ? "btn-disabled bg-[#0f172a] text-gray-500 border border-gray-700" : "bg-[#38bdf8] text-white hover:bg-[#0ea5e9] shadow-[0_5px_15px_rgba(56,189,248,0.3)]";
           const btnText = g.is_joined ? "<i class='bx bx-check-double text-xl'></i> Katıldın" : "<i class='bx bx-party text-xl'></i> Hemen Katıl";
-          actionHTML = `<button class="btn ${btnClass} w-full mt-4 border-none font-black" ${g.is_joined ? '' : `onclick="joinGiveaway(${g.id})"`}>${btnText}</button>`;
+          actionHTML = `<button class="btn ${btnClass} w-full mt-4 border-none font-black" ${g.is_joined ? '' : `onclick="joinGiveaway('${g.id}')"`}>${btnText}</button>`;
         }
-        
-        container.innerHTML += `
-          <div class="premium-card p-5 animate__animated animate__fadeIn">
-            <div class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3">
-              <img src="${g.creator_photo || `https://ui-avatars.com/api/?name=${g.creator_name}`}" class="w-12 h-12 rounded-full border-2 border-[#38bdf8]" />
-              <div><p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Oluşturan</p><p class="font-black text-md text-[#38bdf8]">@${g.creator_name}</p></div>
-              <div class="ml-auto"><div class="badge bg-[#0f172a] text-white font-black border border-gray-700 py-3"><i class='bx bxs-user mr-1 text-[#38bdf8]'></i> ${g.total_participants}</div></div>
-            </div>
-            <h2 class="text-xl font-black text-white flex items-center justify-between">
-              ${g.title} 
-              <span class="badge bg-transparent border border-[#38bdf8] text-[#38bdf8] text-xs font-bold"><i class='bx bxs-trophy mr-1'></i>${g.winner_count}</span>
-            </h2>
-            <p class="text-sm text-gray-400 mt-2 font-medium">${g.description}</p>
-            ${actionHTML}
-          </div>`;
+        container.innerHTML += `<div class="premium-card p-5 animate__animated animate__fadeIn"><div class="flex items-center gap-3 mb-4 border-b border-gray-700 pb-3"><img src="${g.creator_photo || `https://ui-avatars.com/api/?name=${g.creator_name}`}" class="w-12 h-12 rounded-full border-2 border-[#38bdf8]" /><div><p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Oluşturan</p><p class="font-black text-md text-[#38bdf8]">@${g.creator_name}</p></div><div class="ml-auto"><div class="badge bg-[#0f172a] text-white font-black border border-gray-700 py-3"><i class='bx bxs-user mr-1 text-[#38bdf8]'></i> ${g.total_participants}</div></div></div><h2 class="text-xl font-black text-white flex items-center justify-between">${g.title} <span class="badge bg-transparent border border-[#38bdf8] text-[#38bdf8] text-xs font-bold"><i class='bx bxs-trophy mr-1'></i>${g.winner_count}</span></h2><p class="text-sm text-gray-400 mt-2 font-medium">${g.description}</p>${actionHTML}</div>`;
       });
     }
 
@@ -266,18 +214,15 @@
       let wonCount = 0;
       const history = document.getElementById('profile-history');
       history.innerHTML = '';
-      
-      if(data.participated.length === 0) {
-        history.innerHTML = `<p class="text-center text-gray-500 text-sm py-4">Henüz bir çekilişe katılmadın.</p>`;
-      } else {
+      if(data.participated.length === 0) history.innerHTML = `<p class="text-center text-gray-500 text-sm py-4">İşlem yok.</p>`;
+      else {
         data.participated.forEach(g => {
-          let badge = `<span class="badge badge-outline text-[#38bdf8] border-[#38bdf8] text-[10px] font-bold">Devam Ediyor</span>`;
+          let badge = `<span class="badge badge-outline text-[#38bdf8] border-[#38bdf8] text-[10px] font-bold">Aktif</span>`;
           if(g.status === 'ended') {
             const w = g.winners_data ? JSON.parse(g.winners_data) : [];
             if(w.some(x => x.id === currentUser.id)) { wonCount++; badge = `<span class="badge bg-[#10b981] text-white text-[10px] font-bold border-none">Kazandın!</span>`; } 
             else badge = `<span class="badge bg-gray-800 text-gray-400 text-[10px] border-none font-bold">Bitti</span>`;
           } else if (g.status === 'cancelled') badge = `<span class="badge bg-red-900 text-red-300 text-[10px] border-none font-bold">İptal</span>`;
-
           history.innerHTML += `<li class="flex justify-between items-center bg-[#0f172a] p-4 rounded-xl border border-gray-800"><span class="font-black text-white text-sm truncate pr-2">${g.title}</span> ${badge}</li>`;
         });
       }
@@ -287,8 +232,8 @@
     function joinGiveaway(id) {
       fetch('/api/join', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ giveawayId: id, userId: currentUser.id }) })
       .then(res => res.json()).then(data => {
-        if(data.success) { showToast("Çekilişe Katıldın!"); confetti({ particleCount: 80, spread: 60 }); } 
-        else showToast("Bu çekilişe şu an katılamazsın.", "error");
+        if(data.success) { showToast("Katıldın!"); confetti({ particleCount: 80, spread: 60 }); } 
+        else showToast("Hata.", "error");
       });
     }
 
@@ -296,55 +241,31 @@
       const container = document.getElementById('admin-active-list');
       container.innerHTML = '';
       allGiveaways.forEach(g => {
-        container.innerHTML += `
-          <div class="premium-card p-4 flex flex-col gap-3">
-            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-              <p class="font-black text-white truncate max-w-[60%]">${g.title}</p>
-              <span class="badge bg-[#0f172a] text-xs font-bold border border-gray-600">${g.status.toUpperCase()}</span>
-            </div>
-            <div class="flex gap-2">
-              <button class="btn btn-sm flex-1 font-bold ${g.status === 'paused' ? 'bg-[#10b981] text-white hover:bg-[#059669]' : 'bg-warning text-warning-content hover:bg-yellow-600'} border-none" onclick="adminAction('status', ${g.id}, {status: '${g.status === 'paused' ? 'active' : 'paused'}'})">
-                ${g.status === 'paused' ? '<i class="bx bx-play"></i> Başlat' : '<i class="bx bx-pause"></i> Duraklat'}
-              </button>
-              <button class="btn btn-sm btn-error flex-1 font-bold text-white border-none" onclick="adminAction('status', ${g.id}, {status: 'cancelled'})"><i class="bx bx-x"></i> İptal</button>
-            </div>
-            <div class="flex gap-2">
-              <button class="btn btn-sm bg-[#38bdf8] hover:bg-[#0ea5e9] text-white flex-1 font-black border-none" onclick="adminAction('roll', ${g.id})"><i class="bx bx-check-double"></i> Sonuçlandır</button>
-              ${g.status === 'ended' ? `<button class="btn btn-sm bg-gray-700 text-white hover:bg-gray-600 flex-1 font-bold border-none" onclick="adminReroll(${g.id})"><i class="bx bx-refresh"></i> Tekrar Çek</button>` : ''}
-            </div>
-          </div>`;
+        container.innerHTML += `<div class="premium-card p-4 flex flex-col gap-3"><div class="flex justify-between items-center border-b border-gray-700 pb-2"><p class="font-black text-white truncate max-w-[60%]">${g.title}</p><span class="badge bg-[#0f172a] text-xs font-bold border border-gray-600">${g.status.toUpperCase()}</span></div><div class="flex gap-2"><button class="btn btn-sm flex-1 font-bold ${g.status === 'paused' ? 'bg-[#10b981] text-white hover:bg-[#059669]' : 'bg-warning text-warning-content'} border-none" onclick="adminAction('status', '${g.id}', {status: '${g.status === 'paused' ? 'active' : 'paused'}'})">${g.status === 'paused' ? 'Başlat' : 'Duraklat'}</button><button class="btn btn-sm btn-error flex-1 font-bold text-white border-none" onclick="adminAction('status', '${g.id}', {status: 'cancelled'})">İptal</button></div><div class="flex gap-2"><button class="btn btn-sm bg-[#38bdf8] hover:bg-[#0ea5e9] text-white flex-1 font-black border-none" onclick="adminAction('roll', '${g.id}')">Sonuçlandır</button>${g.status === 'ended' ? `<button class="btn btn-sm bg-gray-700 text-white hover:bg-gray-600 flex-1 font-bold border-none" onclick="adminReroll('${g.id}')">Tekrar</button>` : ''}</div></div>`;
       });
     }
 
     function adminAction(action, id = null, extraData = {}) {
       let payload = { action, adminId: currentUser.id, data: { id, ...extraData } };
-      
       if(action === 'create') {
         payload.data.title = document.getElementById('admin-title').value;
         payload.data.description = document.getElementById('admin-desc').value;
         payload.data.winnerCount = parseInt(document.getElementById('admin-winners').value) || 1;
         payload.data.creatorName = currentUser.username || currentUser.first_name;
         payload.data.creatorPhoto = document.getElementById('user-avatar').src;
-        if(!payload.data.title || !payload.data.description) return showToast("Başlık ve açıklama boş olamaz.", "error");
+        if(!payload.data.title || !payload.data.description) return showToast("Hata", "error");
       }
-
       fetch('/api/admin/action', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       .then(res => res.json()).then(data => {
         if(data.success) {
-          if(action === 'create') { 
-            document.getElementById('admin-title').value = ''; 
-            document.getElementById('admin-desc').value = ''; 
-            document.getElementById('admin-winners').value = '1';
-            showToast("Çekiliş Duyuruldu!"); 
-            switchTab('giveaways');
-          }
-          else if(action === 'roll' || action === 'reroll') { showToast("Kazananlar Belirlendi!"); confetti({ particleCount: 200, spread: 120 }); }
-        } else showToast(data.message || "İşlem reddedildi.", "error");
+          if(action === 'create') { document.getElementById('admin-title').value = ''; document.getElementById('admin-desc').value = ''; showToast("Duyuruldu!"); switchTab('giveaways'); }
+          else if(action === 'roll' || action === 'reroll') { showToast("Bitti!"); confetti({ particleCount: 200, spread: 120 }); }
+        } else showToast("Hata.", "error");
       });
     }
 
     function adminReroll(id) {
-      const count = prompt("Kaç kişi tekrar çekilsin?", "1");
+      const count = prompt("Kaç kişi?", "1");
       if(count && parseInt(count) > 0) adminAction('reroll', id, { rerollCount: parseInt(count) });
     }
   </script>
